@@ -17,6 +17,6 @@ class Blog(models.Model):
     enabled = models.BooleanField(default=False)
 
 
-class Comment(models.Model):
+class Comments(models.Model):
     text = models.TextField()  # Field to store the comment text
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="comments")  # Foreign key to Blog model

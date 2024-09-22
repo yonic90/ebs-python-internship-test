@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.blog.models import Blog, Category
-from apps.blog.serializers import BlogSerializer, CategorySerializer
+from apps.blog.models import Blog, Category, Comments
+from apps.blog.serializers import BlogSerializer, CategorySerializer, CommentSerializer
 from apps.common.permissions import ReadOnly
 
 
@@ -46,3 +46,26 @@ class BlogCreateView(GenericAPIView):
         blog = Blog.objects.create(**validated_data)
 
         return Response(self.serializer_class(blog).data)
+
+
+class CreateCommentView(GenericAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request: Request) -> Response:
+        # Validate data
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Extract data from request
+        blog_id = serializer.validated_data.get("blog").id
+        text = serializer.validated_data.get("text")
+
+        # get blog post
+        blog = get_object_or_404(Blog, id=blog_id)
+
+        # create comment
+        comment = Comments.objects.create(blog=blog, text=text)
+
+        # Return comment
+        return Response(self.get_serializer(comment).data)
